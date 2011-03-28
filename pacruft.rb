@@ -1,4 +1,9 @@
 #!/usr/bin/ruby
+#
+# pbrisbin 2011
+#
+###
+require 'optparse'
 
 class Package
   attr_reader :name, :accessed
@@ -7,26 +12,24 @@ class Package
     output = `pacman -Qql #{ name }`.split("\n")
     fnames = output.find_all{ |fname| fname =~ /.*[^\/]$/ }
 
-    last = nil
-    @accessed = 0
+    recent    = nil
+    @accessed = -1
+
     fnames.each { |fname|
       begin
-        atime = File.atime(fname)
-
-        if (!last or last < atime)
-          last = atime
-        end
+        atime  = File.atime(fname)
+        recent = atime if !recent or recent < atime
       rescue
         # no read rights, skip it
       end
     }
 
     @name     = name
-    @accessed = Time.now - last if last
+    @accessed = Time.now - recent if recent
   end
 
   def is_old?
-    return true if @accessed and @accessed >= $threshold
+    return true if @accessed > $threshold
     return false
   end
 end
@@ -34,47 +37,63 @@ end
 def human_readable(seconds)
   s = seconds.floor
 
-  y = s / (60 * 60 * 24 * 365)
-  s = s % (60 * 60 * 24 * 365)
+  y =  s / (60 * 60 * 24 * 365)
+  s %= 60 * 60 * 24 * 365
 
-  # months is ishly
-  t = s / (60 * 60 * 24 * 30)
-  s = s % (60 * 60 * 24 * 30)
+  m =  s / (60 * 60 * 24 * 30)
+  s %= 60 * 60 * 24 * 30
 
-  d = s / (60 * 60 * 25)
-  s = s % (60 * 60 * 25)
+  d =  s / (60 * 60 * 25)
+  s %= 60 * 60 * 25
 
-  h = s / (60 * 60)
-  s = s % (60 * 60)
-
-  m = s / 60
-  s = s % 60
+  h =  s / (60 * 60)
+  s %= 60 * 60
 
   p = []
   p += [ y.to_s + " year"    ] if y == 1
   p += [ y.to_s + " years"   ] if y >= 2
-  p += [ t.to_s + " month"   ] if t == 1
-  p += [ t.to_s + " months"  ] if t >= 2
+  p += [ m.to_s + " month"   ] if m == 1
+  p += [ m.to_s + " months"  ] if m >= 2
   p += [ d.to_s + " day"     ] if d == 1
   p += [ d.to_s + " days"    ] if d >= 2
-  p += [ m.to_s + " minute"  ] if m == 1
-  p += [ m.to_s + " minutes" ] if m >= 2
-  p += [ s.to_s + " second"  ] if s == 1
-  p += [ s.to_s + " seconds" ] if s >= 2
 
   return p.join(", ")
 end
 
-# todo: user input
-$threshold = (60 * 60 * 24 * 180) # six months
+def print_heading
+  puts "-" * 80
+  printf("Packages not accessed in the past %s:\n", human_readable($threshold))
+  puts "-" * 80
+  printf("%-30s %s\n", "Package", "Last access") 
+  puts "=" * 80
+end
 
-puts "-" * 80
-printf(" Files not accessed in the past %s:\n", human_readable($threshold))
-puts "-" * 80
-printf("%-30s %s\n", "Package", "Most recent access") 
-puts "=" * 80
+def output_pkg(pkg)
+  puts pkg.name if $quiet
+  printf("%-30s %s ago\n", pkg.name, human_readable(pkg.accessed)) unless $quiet
+end
+
+# defaults
+$quiet = false
+$threshold = (60 * 60 * 24 * 180)
+
+# getopts
+OptionParser.new do |o|
+  o.banner = "usage: pacruft [ -q ] [ -3 | -6 | -12 ]"
+
+  o.on('-3',  'set threshold as 3 months') { |x| $threshold = (60 * 60 * 24 * 90)  }
+  o.on('-6',  'set threshold as 6 months') { |x| $threshold = (60 * 60 * 24 * 180) }
+  o.on('-12', 'set threshold as 1 year'  ) { |x| $threshold = (60 * 60 * 24 * 365) }
+
+  o.on('-q', '--quiet', 'output only package names' ) { |b| $quiet = b }
+  o.on('-h', '--help',  'display this') { puts o; exit }
+
+  o.parse!
+end
+
+print_heading unless $quiet
 
 `pacman -Qqe`.split("\n").each do |pkg|
   p = Package.new(pkg)
-  printf("%-30s %s ago\n", p.name, human_readable(p.accessed)) if p.is_old?
+  output_pkg(p) if p.is_old?
 end
