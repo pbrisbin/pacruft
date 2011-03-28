@@ -74,18 +74,18 @@ def output_pkg(pkg)
 end
 
 # defaults
-$quiet = false
+$quiet     = false
 $threshold = (60 * 60 * 24 * 180)
 
 # getopts
 OptionParser.new do |o|
   o.banner = "usage: pacruft [ -q ] [ -3 | -6 | -12 ]"
 
-  o.on('-3',  'set threshold as 3 months') { |x| $threshold = (60 * 60 * 24 * 90)  }
-  o.on('-6',  'set threshold as 6 months') { |x| $threshold = (60 * 60 * 24 * 180) }
-  o.on('-12', 'set threshold as 1 year'  ) { |x| $threshold = (60 * 60 * 24 * 365) }
+  o.on('-3',  'set threshold as 3 months') { $threshold = (60 * 60 * 24 * 90)  }
+  o.on('-6',  'set threshold as 6 months') { $threshold = (60 * 60 * 24 * 180) }
+  o.on('-12', 'set threshold as 1 year'  ) { $threshold = (60 * 60 * 24 * 365) }
 
-  o.on('-q', '--quiet', 'output only package names' ) { |b| $quiet = b }
+  o.on('-q', '--quiet', 'output only package names' ) { $quiet = true }
   o.on('-h', '--help',  'display this') { puts o; exit }
 
   o.parse!
