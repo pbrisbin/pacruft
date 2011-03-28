@@ -43,19 +43,19 @@ def human_readable(seconds)
   m =  s / (60 * 60 * 24 * 30)
   s %= 60 * 60 * 24 * 30
 
-  d =  s / (60 * 60 * 25)
-  s %= 60 * 60 * 25
+  d =  s / (60 * 60 * 24)
+  s %= 60 * 60 * 24
 
   h =  s / (60 * 60)
   s %= 60 * 60
 
   p = []
-  p += [ y.to_s + " year"    ] if y == 1
-  p += [ y.to_s + " years"   ] if y >= 2
-  p += [ m.to_s + " month"   ] if m == 1
-  p += [ m.to_s + " months"  ] if m >= 2
-  p += [ d.to_s + " day"     ] if d == 1
-  p += [ d.to_s + " days"    ] if d >= 2
+  p += [ y.to_s + " year"   ] if y == 1
+  p += [ y.to_s + " years"  ] if y >= 2
+  p += [ m.to_s + " month"  ] if m == 1
+  p += [ m.to_s + " months" ] if m >= 2
+  p += [ d.to_s + " day"    ] if d == 1
+  p += [ d.to_s + " days"   ] if d >= 2
 
   return p.join(", ")
 end
