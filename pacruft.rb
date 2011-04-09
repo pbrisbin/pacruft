@@ -5,8 +5,6 @@
 ###
 require 'optparse'
 
-# a Package consists of a name and the time since its most recently 
-# accessed file was accessed
 class Package
   attr_reader :name, :accessed
 
@@ -31,20 +29,39 @@ class Package
     return `pacman -Qql #{ @name }`.split("\n").find_all { |fname| fname =~ /.*[^\/]$/ }
   end
 
-  def is_old?
-    return true if @accessed > $T
+  def is_older_than?(t)
+    return true if @accessed > t.seconds
     return false
   end
 end
 
-$T = (60 * 60 * 24 * 180)
+class Threshold
+  attr_writer :years, :months, :days
+
+  def initialize
+    # default values
+    @years   = 0
+    @months  = 0
+    @days    = 0
+  end
+
+  def seconds
+    ret  = 0
+    ret += @years  * 365 * 24 * 60 * 60 if @years
+    ret += @months *  30 * 24 * 60 * 60 if @months
+    ret += @days         * 24 * 60 * 60 if @days
+
+    return ret
+  end
+end
+
+t = nil
 
 OptionParser.new do |o|
-  o.on('-3',  'set threshold as 3 months') { $T = (60 * 60 * 24 * 90)  }
-  o.on('-6',  'set threshold as 6 months') { $T = (60 * 60 * 24 * 180) }
-  o.on('-12', 'set threshold as 1 year'  ) { $T = (60 * 60 * 24 * 365) }
-
-  o.on('-h', '--help', 'display this') { puts o; exit }
+  o.on('-y', '--years  <years>' ) { |y| t = Threshold.new unless t; t.years   = y.to_f }
+  o.on('-m', '--months <months>') { |m| t = Threshold.new unless t; t.months  = m.to_f }
+  o.on('-d', '--days   <days>'  ) { |d| t = Threshold.new unless t; t.days    = d.to_f }
+  o.on('-h', '--help'           ) { puts o; exit }
 
   begin o.parse!
   rescue OptionParser::InvalidOption => e
@@ -53,7 +70,12 @@ OptionParser.new do |o|
   end
 end
 
+unless t # if no options were passed
+  t = Threshold.new
+  t.months = 6
+end
+
 `pacman -Qqe`.split("\n").each { |p|
   pkg = Package.new(p)
-  puts pkg.name if pkg.is_old?
+  puts pkg.name if pkg.is_older_than? t
 }
