@@ -58,9 +58,9 @@ end
 t = nil
 
 OptionParser.new do |o|
-  o.on('-y', '--years  <years>' ) { |y| t = Threshold.new unless t; t.years   = y.to_f }
-  o.on('-m', '--months <months>') { |m| t = Threshold.new unless t; t.months  = m.to_f }
-  o.on('-d', '--days   <days>'  ) { |d| t = Threshold.new unless t; t.days    = d.to_f }
+  o.on('-y', '--years  <years>' ) { |y| t = Threshold.new unless t; t.years  = y.to_f }
+  o.on('-m', '--months <months>') { |m| t = Threshold.new unless t; t.months = m.to_f }
+  o.on('-d', '--days   <days>'  ) { |d| t = Threshold.new unless t; t.days   = d.to_f }
   o.on('-h', '--help'           ) { puts o; exit }
 
   begin o.parse!
