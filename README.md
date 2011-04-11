@@ -16,6 +16,7 @@ seldom use and could probably do without.
 
 ### Example output
 
+    $ pacruft
     bar
     bmpanel
     chkrootkit
@@ -40,7 +41,7 @@ If *any* options are passed, the 6 month default is disabled, so
 `pacruft -d 15` would only represent a 15 day threshold.
 
 Some packages own files unreadable by an unprivileged user. These files 
-are ignored and the package is be evaluated as if the unreadable file(s) 
+are ignored and the package is evaluated as if the unreadable file(s) 
 didn't exist. Additionally, a package with no readable files will never 
 appear as old.
 
