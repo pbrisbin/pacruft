@@ -47,3 +47,10 @@ appear as old.
 
 This script only performs reads, so it's *probably* safe to run as root 
 to get the most accurate listing.
+
+### Installation
+
+Clone this repo and run `./pacruft.rb` directly or install the [aur 
+pkg][] and just run `pacruft`.
+
+[aur pkg]: http://aur.archlinux.org/packages.php?ID=48585 "pacruft on the aur"
