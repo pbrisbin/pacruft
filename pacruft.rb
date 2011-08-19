@@ -5,6 +5,15 @@
 ###
 require 'optparse'
 
+class Fixnum # add some time helpers to Fixnum
+  def seconds; return self               end
+  def minutes; return self         * 60  end
+  def hours;   return self.minutes * 60  end
+  def days;    return self.hours   * 24  end
+  def months;  return self.days    * 30  end
+  def years;   return self.days    * 365 end
+end
+
 class Package
   attr_reader :name, :accessed
 
@@ -25,42 +34,24 @@ class Package
     @accessed = Time.now - max if max
   end
 
-  def owned_files 
-    return `pacman -Qql #{ @name }`.split("\n").find_all { |fname| fname =~ /.*[^\/]$/ }
-  end
-
   def is_older_than?(t)
     return true if @accessed > t.seconds
     return false
   end
-end
 
-class Threshold
-  attr_writer :years, :months, :days
+  private
 
-  def initialize
-    # default values
-    @years   = 0
-    @months  = 0
-    @days    = 0
-  end
-
-  def seconds
-    ret  = 0
-    ret += @years  * 365 * 24 * 60 * 60 if @years
-    ret += @months *  30 * 24 * 60 * 60 if @months
-    ret += @days         * 24 * 60 * 60 if @days
-
-    return ret
+  def owned_files 
+    return `pacman -Qql #{ @name }`.split("\n").find_all { |fname| fname =~ /.*[^\/]$/ }
   end
 end
 
-t = nil
+t = 0
 
 OptionParser.new do |o|
-  o.on('-y', '--years  <years>' ) { |y| t = Threshold.new unless t; t.years  = y.to_f }
-  o.on('-m', '--months <months>') { |m| t = Threshold.new unless t; t.months = m.to_f }
-  o.on('-d', '--days   <days>'  ) { |d| t = Threshold.new unless t; t.days   = d.to_f }
+  o.on('-y', '--years  <years>' ) { |y| t += y.to_i.years  }
+  o.on('-m', '--months <months>') { |m| t += m.to_i.months }
+  o.on('-d', '--days   <days>'  ) { |d| t += d.to_i.days   }
   o.on('-h', '--help'           ) { puts o; exit }
 
   begin o.parse!
@@ -70,10 +61,8 @@ OptionParser.new do |o|
   end
 end
 
-unless t # if no options were passed
-  t = Threshold.new
-  t.months = 6
-end
+# no options passed?
+t = 6.months if t == 0
 
 `pacman -Qqe`.split("\n").each { |p|
   pkg = Package.new(p)
