@@ -15,26 +15,26 @@ class Fixnum # add some time helpers to Fixnum
 end
 
 class Package
-  attr_reader :name, :accessed
+  attr_reader :name
 
-  def initialize(name)
+  def initialize name
     @name     = name
     @accessed = -1
 
     max = nil
-    owned_files.each { |fname|
+    owned_files.each do |fname|
       begin
         atime = File.atime(fname)
         max   = atime if !max or atime > max
       rescue
         # can't read; skip
       end
-    }
+    end
 
     @accessed = Time.now - max if max
   end
 
-  def is_older_than?(t)
+  def is_older_than? t
     return true if @accessed > t.seconds
     return false
   end
@@ -42,6 +42,7 @@ class Package
   private
 
   def owned_files 
+    # assumption: a non-directory will end in a non-slash
     return `pacman -Qql #{ @name }`.split("\n").find_all { |fname| fname =~ /.*[^\/]$/ }
   end
 end
@@ -64,7 +65,7 @@ end
 # no options passed?
 t = 6.months if t == 0
 
-`pacman -Qqe`.split("\n").each { |p|
+`pacman -Qqe`.split("\n").each do |p|
   pkg = Package.new(p)
   puts pkg.name if pkg.is_older_than? t
-}
+end
