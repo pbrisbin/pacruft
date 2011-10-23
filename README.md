@@ -50,7 +50,10 @@ to get the most accurate listing.
 
 ### Installation
 
-Clone this repo and run `./pacruft.rb` directly or install the [aur 
-pkg][] and just run `pacruft`.
+1. Install the `jeweler` gem
+2. Clone this repo
+3. `rake install` or `sudo rake install`
 
-[aur pkg]: http://aur.archlinux.org/packages.php?ID=48585 "pacruft on the aur"
+There is an [aur pkg][], but it's out of date for the time being.
+
+[aur pkg]: http://aur.archlinux.org/packages.php?ID=48585
