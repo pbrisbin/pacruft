@@ -7,9 +7,10 @@ require 'optparse'
 require 'pacruft'
 
 def main
+  t = 0
+
   # parse options
-  time = OptionParser.new do |o|
-    t = 0
+  OptionParser.new do |o|
 
     o.on('-y', '--years  <years>' ) { |y| t += y.to_i.years  }
     o.on('-m', '--months <months>') { |m| t += m.to_i.months }
@@ -28,7 +29,7 @@ def main
   # main routine
   `pacman -Qqe`.split("\n").each do |p|
     pkg = Package.new(p)
-    puts pkg.name if pkg.is_older_than? time
+    puts pkg.name if pkg.is_older_than? t
   end
 end
 
