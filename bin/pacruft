@@ -1,0 +1,35 @@
+#!/usr/bin/ruby
+#
+# pbrisbin 2011
+#
+###
+require 'optparse'
+require 'pacruft'
+
+def main
+  # parse options
+  time = OptionParser.new do |o|
+    t = 0
+
+    o.on('-y', '--years  <years>' ) { |y| t += y.to_i.years  }
+    o.on('-m', '--months <months>') { |m| t += m.to_i.months }
+    o.on('-d', '--days   <days>'  ) { |d| t += d.to_i.days   }
+    o.on('-h', '--help'           ) { puts o; exit }
+
+    begin o.parse!
+    rescue OptionParser::InvalidOption => e
+      puts e; puts o;
+      exit 1
+    end
+
+    t = 6.months if t == 0
+  end
+
+  # main routine
+  `pacman -Qqe`.split("\n").each do |p|
+    pkg = Package.new(p)
+    puts pkg.name if pkg.is_older_than? time
+  end
+end
+
+main
