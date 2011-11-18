@@ -28,7 +28,7 @@ def main
 
   # main routine
   `pacman -Qqe`.split("\n").each do |p|
-    pkg = Package.new(p)
+    pkg = Pacruft::Package.new(p)
     puts pkg.name if pkg.is_older_than? t
   end
 end
