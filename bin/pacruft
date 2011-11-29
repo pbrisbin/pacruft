@@ -1,36 +1,34 @@
 #!/usr/bin/ruby
-#
-# pbrisbin 2011
-#
-###
+
 require 'optparse'
 require 'pacruft'
 
-def main
-  t = 0
+module Pacruft
+  class Main
+    def self.run
+      t = 0
 
-  # parse options
-  OptionParser.new do |o|
+      OptionParser.new do |o|
+        o.on('-y', '--years  <years>' ) { |y| t += y.to_i.years  }
+        o.on('-m', '--months <months>') { |m| t += m.to_i.months }
+        o.on('-d', '--days   <days>'  ) { |d| t += d.to_i.days   }
+        o.on('-h', '--help'           ) { puts o; exit }
 
-    o.on('-y', '--years  <years>' ) { |y| t += y.to_i.years  }
-    o.on('-m', '--months <months>') { |m| t += m.to_i.months }
-    o.on('-d', '--days   <days>'  ) { |d| t += d.to_i.days   }
-    o.on('-h', '--help'           ) { puts o; exit }
+        begin o.parse!
+        rescue OptionParser::InvalidOption => e
+          puts e; puts o;
+          exit 1
+        end
 
-    begin o.parse!
-    rescue OptionParser::InvalidOption => e
-      puts e; puts o;
-      exit 1
+        t = 6.months if t == 0
+      end
+
+      `pacman -Qqe`.lines do |p|
+        pkg = Package.new(p.chomp)
+        puts pkg.name if pkg.is_older_than? t
+      end
     end
-
-    t = 6.months if t == 0
-  end
-
-  # main routine
-  `pacman -Qqe`.split("\n").each do |p|
-    pkg = Pacruft::Package.new(p)
-    puts pkg.name if pkg.is_older_than? t
   end
 end
 
-main
+Pacruft::Main.run

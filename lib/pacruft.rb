@@ -1,4 +1,4 @@
-class Fixnum # add some time helpers to Fixnum
+class Fixnum # :nodoc:
   def seconds; return self               end
   def minutes; return self         * 60  end
   def hours;   return self.minutes * 60  end
@@ -16,12 +16,16 @@ module Pacruft
       @accessed = -1
 
       max = nil
-      owned_files.each do |fname|
+
+      `pacman -Qql #{@name}`.lines do |out|
+        fname = out.chomp
+
         begin
-          atime = File.atime(fname)
-          max   = atime if !max or atime > max
-        rescue
-          # can't read; skip
+          if File.file?(fname)
+            atime = File.atime(fname)
+            max = atime if !max or atime > max
+          end
+        rescue # no read permissions
         end
       end
 
@@ -29,15 +33,7 @@ module Pacruft
     end
 
     def is_older_than? t
-      return true if @accessed > t.seconds
-      return false
-    end
-
-    private
-
-    def owned_files 
-      # assumption: a non-directory will end in a non-slash
-      return `pacman -Qql #{ @name }`.split("\n").find_all { |fname| fname =~ /.*[^\/]$/ }
+      @accessed > t.seconds
     end
   end
 end
