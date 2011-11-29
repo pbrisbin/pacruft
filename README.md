@@ -50,6 +50,7 @@ to get the most accurate listing.
 
 ### Installation
 
+    gem install bundler
     git clone http://github.com/pbrisbin/pacruft && cd pacruft
     bundle install
     rake install
